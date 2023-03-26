@@ -106,3 +106,31 @@ int main(){
 
     return 0;
 }
+
+/* #include <iostream>
+#include <fstream>
+#include <list>
+
+int main() {
+    std::ifstream file("example.txt"); // Open the file
+    std::list<std::string> lines; // Create a list of strings
+
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) { // Read the file line by line
+            lines.push_back(line); // Add each line to the list
+        }
+        file.close(); // Close the file
+    } else {
+        std::cerr << "Failed to open file." << std::endl;
+        return 1;
+    }
+
+    // Print the contents of the list
+    for (const auto& line : lines) {
+        std::cout << line << std::endl;
+    }
+
+    return 0;
+}
+*/
