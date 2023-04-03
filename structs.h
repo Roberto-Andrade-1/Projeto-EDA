@@ -17,7 +17,8 @@ struct carro
 {
     int id;
     int tempoMax;
-    int prioritario; // 0 não é, 1 é
+    int dias;
+    bool prioritario; // false não é, true é
     string marca;
     string modelo;
 };

@@ -2,12 +2,43 @@
 #include <string>
 #include <stdlib.h>
 #include <time.h>
+#include <fstream>
+#include <sstream>
 
 
 using namespace std;
 
+string *lerFicheiro(const string& nomeFicheiro, int &numeroPalavras) {
+    ifstream ficheiro(nomeFicheiro);
+    string *palavras = nullptr;
+    string linha;
+    numeroPalavras = 0;
+
+    while (getline(ficheiro, linha)) {
+        istringstream linhaStream(linha);
+        string palavra;
+        while (linhaStream >> palavra) {
+            string *temp = new string[numeroPalavras + 1];
+            for (int i = 0; i < numeroPalavras; i++) {
+                temp[i] = palavras[i];
+            }
+            temp[numeroPalavras] = palavra;
+            delete[] palavras;
+            palavras = temp;
+            numeroPalavras++;
+        }
+    }
+
+    return palavras;
+}
+
+string escolhePalavraRandom(const string *palavras, int numeroPalavras) {
+    int randomIndex = rand() % numeroPalavras;
+    return palavras[randomIndex];
+}
 
 void ciclo(){
+
 
 
 }
@@ -24,7 +55,7 @@ void gestao(){
     cout << "(5).Gravar Oficina\n";
     cout << "(6).Carregar Oficina\n";
     cout << "(7).Imprimir Oficina\n";
-    cout << "Seleccione a sua opção:\n";
+    cout << "Selecione a sua opção:\n";
     cin >> options;
 
     switch (options)
@@ -66,71 +97,86 @@ void gestao(){
 
 }
 
-void lerFicheiros(){
-
-
-}
-
 int main(){
 
-    char option;
+    bool ficheiros = true;
+    bool sair = false;
+    char escolha;
+    int numeroPalavras = 0;
+    string fila [200];
 
     srand (time(NULL));
 
+    string *marcas = lerFicheiro("marcas.txt", numeroPalavras);
+    string randomPalavra = escolhePalavraRandom(marcas, numeroPalavras);
+    string *modelos = lerFicheiro("modelos.txt", numeroPalavras);
+    string modeloRandom = escolhePalavraRandom(modelos, numeroPalavras);
 
-    cout << "Dia (s)eguinte ********* (g)estão\n";
-    cout << "Selecione a sua opção:\n";
-    cin >> option;
+    delete[] marcas;
+    delete[] modelos;
 
-    switch (tolower(option))
+    while (ficheiros)
     {
-    case 's':
-
-        ciclo();
+        cout << "Pretende inserir dados de ET's e carros guardados em ficheiros? (s/n)\n";
+        cin >> escolha;
         
-        break;
+        switch (escolha)
+        {
+        case 's':
+            /* code */
 
-    case 'g':
+            ficheiros = false;
 
-        gestao();
+            break;
+        
+        case 'n':
 
-        break;
-    
-    default:
+            ficheiros = false;
 
-        cout << "Não selecionou uma opção valida\n";
+            break;
+        
+        default:
 
-        break;
-    }
- 
+            cout << "Escolha uma das opções, s ou n\n";
 
-    return 0;
-}
-
-/* #include <iostream>
-#include <fstream>
-#include <list>
-
-int main() {
-    std::ifstream file("example.txt"); // Open the file
-    std::list<std::string> lines; // Create a list of strings
-
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) { // Read the file line by line
-            lines.push_back(line); // Add each line to the list
+            break;
         }
-        file.close(); // Close the file
-    } else {
-        std::cerr << "Failed to open file." << std::endl;
-        return 1;
     }
+    while(!sair){
 
-    // Print the contents of the list
-    for (const auto& line : lines) {
-        std::cout << line << std::endl;
+        char opcao;
+
+        cout << "Dia (s)eguinte ********* (g)estão\n";
+        cout << "Selecione a sua opção:\n";
+        cin >> opcao;
+
+        switch (opcao)
+        {
+        case 's':
+
+            ciclo();
+            
+            break;
+
+        case 'g':
+
+            gestao();
+
+            break;
+
+        case 'e':
+
+            sair = true;
+
+            break;
+        
+        default:
+
+            cout << "Não selecionou uma opção valida\n";
+
+            break;
+        }
     }
-
-    return 0;
+    
+return 0;
 }
-*/
