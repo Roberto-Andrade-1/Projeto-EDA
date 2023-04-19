@@ -4,7 +4,6 @@
 #include <time.h>
 #include <fstream>
 #include <sstream>
-#include "ETs.h"
 #include "carros.h"
 
 
@@ -98,30 +97,105 @@ void gestao(){
     }
 }
 
-void ciclo(carro carros[], int &numCarros, int &numeroPalavras){
+void ciclo(carro carros[], int &numCarros, int &numeroPalavras, int &numCiclos, estacoes estacao[], int &numEstacoes){
 
     int maxCarros = 200;
 
     if(numCarros >= maxCarros){
         return;
     }
-    for (int i = 0; i < 10; i++) {
-        string *marcas = lerFicheiro("marcas.txt", numeroPalavras);
-        string marcaRandom = escolhePalavraRandom(marcas, numeroPalavras);
-        string *modelos = lerFicheiro("modelos.txt", numeroPalavras);
-        string modeloRandom = escolhePalavraRandom(modelos, numeroPalavras);
 
-        delete[] marcas;
-        delete[] modelos;
+    if(numCiclos < 1){
+        for (int i = 0; i < 10; i++) 
+        {
+            string *marcas = lerFicheiro("marcas.txt", numeroPalavras);
+            string marcaRandom = escolhePalavraRandom(marcas, numeroPalavras);
+            string *modelos = lerFicheiro("modelos.txt", numeroPalavras);
+            string modeloRandom = escolhePalavraRandom(modelos, numeroPalavras);
 
-        carro novoCarro = {numCarros + 1, rand() % 4 + 2, 0, rand() % 100 < 5, marcaRandom, modeloRandom};
-        carros[numCarros] = novoCarro;
-        numCarros++;
-    } 
-        //outro for que passa a cada carro e adiciona dias ao carro até atingir o máximo de tempo
+            delete[] marcas;
+            delete[] modelos;
+
+            carro novoCarro = {numCarros + 1, rand() % 4 + 2, 0, rand() % 100 < 5, 0, marcaRandom, modeloRandom};
+            carros[numCarros] = novoCarro;
+            numCarros++;
+        }
+    }else{
+        int numNovoCarro = 0;
+
+        while (numNovoCarro < 10) 
+        {
+            string *marcas = lerFicheiro("marcas.txt", numeroPalavras);
+            string marcaRandom = escolhePalavraRandom(marcas, numeroPalavras);
+            string *modelos = lerFicheiro("modelos.txt", numeroPalavras);
+            string modeloRandom = escolhePalavraRandom(modelos, numeroPalavras);
+
+            delete[] marcas;
+            delete[] modelos;
+
+            for(int i = 0; i < numEstacoes; i++){
+                if(estacao[i].marcaEspecializada == marcaRandom){
+                    carro novoCarro = {numCarros + 1, rand() % 4 + 2, 0, rand() % 100 < 5, 0,marcaRandom, modeloRandom};
+                    carros[numCarros] = novoCarro;
+                    numCarros++;
+                    numNovoCarro++;
+                }
+            }
+        }
+        for (int i = 0; i < numEstacoes; i++)
+        {
+            if (estacao[i].carroNaEt->idCarro == carros[i].idCarro){ //se tiver dentro da et
+                carros[i].dias++;
+            }
+            // if(estacao[i].carroNaEt->dias >= estacao[i].carroNaEt->tempoMax){
+            //     remove(estacao[i].carroNaEt);
+            // }
+        }
+        
+    }
 }
 
-void estacaoTrabalho(estacoes estacao[],int &numET,int &numEstacoes,int &numeroPalavras, int &numCiclos){  
+void adicionaCarroET(carro carros[], int &numEstacoes, int &numCarros, estacoes estacao[])
+{
+
+    int carroAdicionado = 0;
+    int naoAdicionados = 0;
+    int estacaoAtual = 0;
+    bool sair = false;
+
+    carro* carrosNaoAdicionados = new carro[numCarros];
+
+    do{
+        for (int i = 0; i < numEstacoes; i++){
+    
+            if(estacao[i].marcaEspecializada == carros[i].marca){ 
+                if(estacao[i].quantidadeCarros < estacao[i].capacidade){
+                    
+                    estacao[i].carroNaEt[estacao[i].quantidadeCarros++] = carros[estacaoAtual++];
+                    carroAdicionado++;
+                    break;
+                }
+            }
+            if(i == (numEstacoes - 1)){
+                carrosNaoAdicionados[naoAdicionados++] = carros[estacaoAtual];
+            }
+            if(estacaoAtual == numCarros){
+                sair = true;
+                break;
+            }
+        }
+    }while (carroAdicionado != 8 && !sair);
+           
+    for (int i = estacaoAtual; i < numCarros; i++){
+        carrosNaoAdicionados[naoAdicionados++] = carros[i];
+    }
+
+    delete[] carros;
+    carros = carrosNaoAdicionados;
+    numCarros -= carroAdicionado;
+}
+ 
+void estacaoTrabalho(estacoes estacao[], int &numET, int &numEstacoes, int &numeroPalavras, int &numCiclos){  
 
     string nome;
     getline(cin,nome);
@@ -129,8 +203,8 @@ void estacaoTrabalho(estacoes estacao[],int &numET,int &numEstacoes,int &numeroP
     // fazer um if como no ciclo para so criar as variaveis uma vez e armazená-las em vez de criar novas.
 
     if (numCiclos < 1){
-        for (int i = 0; i < numET; i++){
-
+        for (int i = 0; i < numET; i++)
+        {
             string *marcas = lerFicheiro("marcas.txt", numeroPalavras);
             string marcaRandom = escolhePalavraRandom(marcas, numeroPalavras);
 
@@ -139,7 +213,9 @@ void estacaoTrabalho(estacoes estacao[],int &numET,int &numEstacoes,int &numeroP
             cout << "Dá um nome ao mecânico " << i + 1 << ": \n";
             getline(cin,nome);
 
-            estacoes novaET = {numEstacoes + 1, rand() % 4 + 2, 0, nome, marcaRandom};
+            int capacidade = rand() % 4 + 2;
+
+            estacoes novaET = {numEstacoes + 1, capacidade, 0, nome, marcaRandom, new carro[capacidade], new registo[1]};
 
             estacao[numEstacoes] = novaET;
             numEstacoes++;
@@ -150,30 +226,39 @@ void estacaoTrabalho(estacoes estacao[],int &numET,int &numEstacoes,int &numeroP
 void printCars(carro carros[], int comprimento) {
 
     cout << "\nLista de espera: \n";
-    for (int i = 0; i < comprimento; i++) {
-        cout << "Carro ID: " << carros[i].idCarro << " | ";
-        cout << "Marca: " << carros[i].marca << " | ";
-        cout << "Modelo: " << carros[i].modelo << " | "; 
-        cout << "Prioridade: " << carros[i].prioritario << " | ";
-        cout << "Tempo de Reparacao: " << carros[i].tempoMax << " | ";
-        cout << "Dias na oficina: " << carros[i].dias << "\n";
+    for (int i = 0; i < comprimento; i++) 
+    {
+        cout << "Carro ID: " << carros[i].idCarro << " | "
+             << "Marca: " << carros[i].marca << " | "
+             << "Modelo: " << carros[i].modelo << " | " 
+             << "Prioridade: " << carros[i].prioritario << " | "
+             << "Tempo de Reparacao: " << carros[i].tempoMax << " | "
+             << "Dias na oficina: " << carros[i].dias << "\n";
     }
     cout << "\n\n";
 }
 
 void printETs(estacoes estacao[], int comprimento){
 
-    for (int i = 0; i < comprimento; i++) {
+    for (int i = 0; i < comprimento; i++)
+    {
         cout << "\nEstação ";
-        cout << "ID: " << estacao[i].idET << " | ";
-        cout << "Mecânico: " << estacao[i].mecanico << " | ";
-        cout << "Capacidade: " << estacao[i].capacidade << " | ";
-        cout << "Carros: " << estacao[i].quantidadeCarros << " | ";
-        cout << "Marca: " << estacao[i].marcaEspecializada << " | ";
-        cout << "Total Faturação: 0€" << endl;
+        cout << "ID: " << estacao[i].idET << " | "
+             << "Mecânico: " << estacao[i].mecanico << " | "
+             << "Capacidade: " << estacao[i].capacidade << " | "
+             << "Carros: " << estacao[i].quantidadeCarros << " | "
+             << "Marca: " << estacao[i].marcaEspecializada << " | "
+             << "Total Faturação: \n";
+
+        for(int j = 0; j < estacao[i].quantidadeCarros; j++){
+            cout <<"Carro: ID: " << estacao[i].carroNaEt[j].idCarro << " | "
+                 << estacao[i].carroNaEt[j].marca << "-" << estacao[i].carroNaEt[j].modelo
+                 << " | Prioritário: " << estacao[i].carroNaEt[j].prioritario << " | Tempo Reparação: " 
+                 << estacao[i].carroNaEt[j].tempoMax << " | Dias na ET: " << estacao[i].carroNaEt[j].dias << "\n";  
+        }
         cout << "-------------------------- \n";
     }
-} 
+}
 
 int main(){
 
@@ -188,9 +273,9 @@ int main(){
     int numET = rand () % 6 + 3;
     int numCiclos = 0;
 
-    carro carros [200];
+    carro carros[200];
 
-    estacoes estacao [8];
+    estacoes estacao[8];
 
     //usar uma variavel numCiclos para saber quantos tem e bloquear funções
 
@@ -226,7 +311,7 @@ int main(){
         if(numCiclos == 0){
             estacaoTrabalho(estacao, numET, numEstacoes, numeroPalavras, numCiclos);
 
-            ciclo(carros, numCarros, numeroPalavras);
+            ciclo(carros, numCarros, numeroPalavras, numCiclos, estacao, numEstacoes);
             
             printETs(estacao, numEstacoes);
 
@@ -237,19 +322,21 @@ int main(){
 
         char opcao;
 
-        cout << "Dia (s)eguinte ********* (g)estão\n";
-        cout << "Selecione a sua opção:\n";
+        cout << "Dia (s)eguinte ********* (g)estão\n"
+             << "       (e)scapar às contas\n"
+             << "Selecione a sua opção:\n";
         cin >> opcao;
 
         switch (opcao)
         {
         case 's':
 
-
             estacaoTrabalho(estacao, numET, numEstacoes, numeroPalavras, numCiclos);
 
-            ciclo(carros, numCarros, numeroPalavras);
-            
+            ciclo(carros, numCarros, numeroPalavras, numCiclos, estacao, numEstacoes);
+
+            adicionaCarroET(carros, numEstacoes, numCarros, estacao);
+
             printETs(estacao, numEstacoes);
 
             printCars(carros, numCarros);
@@ -277,5 +364,7 @@ int main(){
             break;
         }
     }
+    delete[] carros;
+    delete[] estacao;
 return 0;
 }
