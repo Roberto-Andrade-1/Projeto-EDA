@@ -1,6 +1,6 @@
 Acura
-Alfa Romeo
-Aston Martin
+Alfa-Romeo
+Aston-Martin
 Audi
 Bentley
 BMW
@@ -22,7 +22,7 @@ Jaguar
 Jeep
 Kia
 Lamborghini
-Land Rover
+Land-Rover
 Lexus
 Lincoln
 Lucid
